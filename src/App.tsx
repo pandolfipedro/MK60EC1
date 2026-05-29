@@ -15,6 +15,9 @@ import { applyMirrorPairs } from './lib/mirror';
 import { migrateCoding } from './lib/migrate';
 import { t } from './i18n/pt-BR';
 import { VinInput } from './components/VinInput';
+import { VinChassisPanel } from './components/VinChassisPanel';
+import { REFERENCE_LONG_CODES } from './data/reference-presets';
+import { applyPq35CcPreset, buildFullFromChassis } from './lib/vin-decode';
 import { HexOutput } from './components/HexOutput';
 import { DecodeTable } from './components/DecodeTable';
 import { ByteEditor } from './components/ByteEditor';
@@ -160,9 +163,26 @@ export default function App() {
                 <button
                   type="button"
                   className="btn"
+                  onClick={() => {
+                    const next = buildFullFromChassis(bytes, vin);
+                    if (next) setBytes(next);
+                  }}
+                >
+                  {t.applyFromChassis}
+                </button>
+                <button
+                  type="button"
+                  className="btn"
                   onClick={() => setBytes((b) => applyVinToCoding(b, vin))}
                 >
                   {t.applyVin}
+                </button>
+                <button
+                  type="button"
+                  className="btn secondary"
+                  onClick={() => setBytes((b) => applyPq35CcPreset(b))}
+                >
+                  {t.applyPq35CcPreset}
                 </button>
                 <button
                   type="button"
@@ -270,6 +290,15 @@ export default function App() {
         </section>
 
         <aside className="side-panel">
+          {vin.length === 17 && (
+            <VinChassisPanel
+              vin={vin}
+              bytes={bytes}
+              referenceHex={
+                partEntry?.suffix === 'CC' ? REFERENCE_LONG_CODES.jettaCc : undefined
+              }
+            />
+          )}
           <WarningsPanel issues={issues} title={t.warnings} />
           <div className="checklist">
             <h3>{t.postCoding}</h3>

@@ -287,6 +287,61 @@
   padding-left: 1.2rem;
 }
 
+.vin-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.vin-panel h3,
+.vin-panel h4 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.vin-dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 0.75rem;
+  margin: 0;
+}
+
+.vin-dl dt {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.vin-dl dd {
+  margin: 0;
+}
+
+.vin-byte-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.vin-diff .hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
+.mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.mini-table th,
+.mini-table td {
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.4rem;
+  text-align: left;
+}
+
 .issue-info {
   color: var(--muted);
 }

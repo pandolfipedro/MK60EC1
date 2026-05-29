@@ -12,6 +12,13 @@ export const t = {
   copy: 'Copiar',
   copyVcds: 'Copiar (espaços VCDS)',
   applyVin: 'Aplicar bytes do VIN',
+  applyFromChassis: 'Gerar do chassi',
+  applyEosCcPreset: 'Preset PQ35 + CC (equipamento)',
+  applyPq35CcPreset: 'Preset PQ35 + CC (equipamento)',
+  chassisDetails: 'Detalhes do chassi',
+  vinDiffTitle: 'Diferenças vs. coding de referência',
+  vinDiffHint:
+    'Linhas marcadas como PR/manual dependem de equipamento (ABS, motor, ACC, TPMS). Bytes VIN devem coincidir após «Aplicar bytes do VIN».',
   applyMirror: 'Recalcular espelhos',
   decode: 'Decodificar',
   generate: 'Atualizar preview',
