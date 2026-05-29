@@ -13,12 +13,21 @@ export const t = {
   copyVcds: 'Copiar (espaços VCDS)',
   applyVin: 'Aplicar bytes do VIN',
   applyFromChassis: 'Gerar do chassi',
+  applyFromChassisBr: 'Gerar do chassi (preset Brasil)',
+  brMarketTitle: 'Mercado Brasil — Jetta',
+  brModuleHint: 'Preset para módulo',
+  brEngineConfidence: 'Confiança motor',
+  brMarketFootnote:
+    'Ajuste manual se o carro tiver xenon, PLA, ACC ou módulo trocado (AD→BL→CC). Motor TSI só confirme com etiqueta no cofre.',
   applyEosCcPreset: 'Preset PQ35 + CC (equipamento)',
   applyPq35CcPreset: 'Preset PQ35 + CC (equipamento)',
   chassisDetails: 'Detalhes do chassi',
   vinDiffTitle: 'Diferenças vs. coding de referência',
   vinDiffHint:
     'Linhas marcadas como PR/manual dependem de equipamento (ABS, motor, ACC, TPMS). Bytes VIN devem coincidir após «Aplicar bytes do VIN».',
+  vinOfflineLimits: 'O que o chassi sozinho não revela',
+  vinExternalApiHint:
+    'Motor, trim e PR exatos exigem banco VAG (ETKA/PR-nr) ou API (ex. NHTSA vPIC para VIN NA). Pode ser adicionado depois, opcional e com rede.',
   applyMirror: 'Recalcular espelhos',
   decode: 'Decodificar',
   generate: 'Atualizar preview',

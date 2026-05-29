@@ -15,6 +15,7 @@ export function VinChassisPanel({ vin, bytes, referenceHex }: Props) {
   const info = decodeVinChassis(vin);
   if (!info) return null;
 
+  const v = info.vehicle;
   const diff = referenceHex
     ? compareWithReference(bytes, referenceHex).filter((r) => !r.match && r.ref !== '—')
     : [];
@@ -24,24 +25,76 @@ export function VinChassisPanel({ vin, bytes, referenceHex }: Props) {
       <h3>{t.chassisDetails}</h3>
       <dl className="vin-dl">
         <dt>WMI</dt>
-        <dd>{info.wmi}</dd>
-        <dt>VDS (4–9)</dt>
-        <dd>{info.vds}</dd>
-        <dt>VIS (10–17)</dt>
-        <dd>{info.vis}</dd>
-        <dt>Modelo (pos. 7–8)</dt>
         <dd>
-          <code>{info.modelCode78}</code> — pos. 7 «{info.char7}», pos. 8 «{info.char8}»
+          <code>{info.wmi}</code> — {info.wmiLabel}
         </dd>
-        <dt>Veículo (heurística)</dt>
+        <dt>Ano-modelo (pos. 10)</dt>
+        <dd>
+          {v.modelYear !== null ? (
+            <>
+              <strong>{v.modelYear}</strong> («{v.modelYearChar}»)
+            </>
+          ) : (
+            `«${v.modelYearChar}» — tabela desconhecida`
+          )}
+        </dd>
+        <dt>Fábrica (pos. 11)</dt>
+        <dd>
+          <code>{v.plantCode}</code>
+          {v.plantName ? ` — ${v.plantName}` : ' — código não mapeado'}
+        </dd>
+        <dt>Plataforma (pos. 7–8)</dt>
+        <dd>
+          <code>{v.platformCode}</code>
+          {v.platform ? ` — ${v.platform}` : ''}
+          {v.generation ? ` (${v.generation})` : ''}
+        </dd>
+        <dt>Modelos possíveis</dt>
+        <dd>
+          {v.possibleModels.length > 0 ? (
+            <ul className="vin-byte-list compact">
+              {v.possibleModels.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          ) : (
+            '— (código 7–8 não na base local)'
+          )}
+        </dd>
+        <dt>VDS (pos. 4–9)</dt>
+        <dd>
+          <code>{info.vds}</code>
+          {v.vdsHint && (
+            <span className={`conf conf-${v.vdsConfidence}`}>
+              {' '}
+              — {v.vdsHint}
+              {v.vdsConfidence ? ` [${v.vdsConfidence}]` : ''}
+            </span>
+          )}
+        </dd>
+        <dt>VIS / série (12–17)</dt>
+        <dd>
+          <code>{v.serialNumber}</code>
+        </dd>
+        <dt>Dígito verificador (pos. 9)</dt>
+        <dd>
+          {v.checkDigitValid ? (
+            <span className="ok">válido ({v.checkDigit})</span>
+          ) : (
+            <span className="warn">
+              esperado {v.checkDigitExpected}, lido {v.checkDigit}
+            </span>
+          )}
+        </dd>
+        <dt>Veículo (resumo)</dt>
         <dd>{info.vehicleHint}</dd>
-        <dt>Byte 0 sugerido</dt>
+        <dt>Byte 0 sugerido (ABS)</dt>
         <dd>
           {info.suggestedByte0 !== null
-            ? `0x${toHexByte(info.suggestedByte0)} (ajuste manual se o de fábrica for outro)`
+            ? `0x${toHexByte(info.suggestedByte0)}`
             : '—'}
         </dd>
-        <dt>Bytes do VIN (calculados)</dt>
+        <dt>Bytes MK60 do VIN</dt>
         <dd>
           <ul className="vin-byte-list">
             <li>
@@ -60,6 +113,16 @@ export function VinChassisPanel({ vin, bytes, referenceHex }: Props) {
           </ul>
         </dd>
       </dl>
+
+      <details className="vin-limits">
+        <summary>{t.vinOfflineLimits}</summary>
+        <ul>
+          {v.notDecodableOffline.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+          <li>{t.vinExternalApiHint}</li>
+        </ul>
+      </details>
 
       {referenceHex && diff.length > 0 && (
         <div className="vin-diff">

@@ -17,7 +17,12 @@ import { t } from './i18n/pt-BR';
 import { VinInput } from './components/VinInput';
 import { VinChassisPanel } from './components/VinChassisPanel';
 import { REFERENCE_LONG_CODES } from './data/reference-presets';
-import { applyPq35CcPreset, buildFullFromChassis } from './lib/vin-decode';
+import { applyPq35CcPreset } from './lib/vin-decode';
+import {
+  buildFullFromChassisForPart,
+  moduleSuffixFromPart,
+} from './lib/br-market-apply';
+import { BrMarketPanel } from './components/BrMarketPanel';
 import { HexOutput } from './components/HexOutput';
 import { DecodeTable } from './components/DecodeTable';
 import { ByteEditor } from './components/ByteEditor';
@@ -164,11 +169,11 @@ export default function App() {
                   type="button"
                   className="btn"
                   onClick={() => {
-                    const next = buildFullFromChassis(bytes, vin);
+                    const next = buildFullFromChassisForPart(bytes, vin, partQuery);
                     if (next) setBytes(next);
                   }}
                 >
-                  {t.applyFromChassis}
+                  {t.applyFromChassisBr}
                 </button>
                 <button
                   type="button"
@@ -290,6 +295,12 @@ export default function App() {
         </section>
 
         <aside className="side-panel">
+          {vin.length === 17 && (
+            <BrMarketPanel
+              vin={vin}
+              moduleSuffix={moduleSuffixFromPart(partQuery)}
+            />
+          )}
           {vin.length === 17 && (
             <VinChassisPanel
               vin={vin}

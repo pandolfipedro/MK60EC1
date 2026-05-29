@@ -4,32 +4,27 @@ import { normalizeVin, isValidVin, computeVinByte, VIN_FORMULA_BYTES } from './v
 import { applyMirrorPairs } from './mirror';
 import { applyVinToCoding } from './coding-engine';
 import type { ProfileId } from './types';
-
-const VIN_DERIVED_INDICES = new Set(VIN_FORMULA_BYTES.map((f) => f.index));
+import { decodeVinVehicleDetails, type VinVehicleDetails } from './vin-vehicle';
+import { VAG_PLATFORM_78 } from '../data/vin-standard';
+import { WMI_HINTS } from './vin-wmi';
+import { applyEquipmentPreset } from './equipment-preset';
 
 export interface VinDecodeInfo {
   vin: string;
   wmi: string;
+  wmiLabel: string;
   vds: string;
   vis: string;
   modelCode78: string;
   char7: string;
   char8: string;
   vehicleHint: string;
+  vehicle: VinVehicleDetails;
   suggestedByte0: number | null;
   byte1Expected: number | null;
   byte3Expected: number | null;
   vinFormulaBytes: { index: number; expected: number | null }[];
 }
-
-const WMI_HINTS: Record<string, string> = {
-  '3VW': 'Volkswagen (México / exportação)',
-  WVW: 'Volkswagen (Alemanha)',
-  WVG: 'Volkswagen SUV',
-  TMB: 'Škoda',
-  VSS: 'SEAT',
-  WAU: 'Audi',
-};
 
 /** Heurística pos. 4–8 + WMI para sugerir veículo (não confundir RE no VDS com Eos). */
 function inferVehicle(vin: string): { hint: string; byte0: number | null } {
@@ -47,16 +42,24 @@ function inferVehicle(vin: string): { hint: string; byte0: number | null } {
   }
 
   if (code78 === '1K' || code78 === '5K' || code78 === 'AJ') {
+    const plat = VAG_PLATFORM_78[code78];
     const isMexJetta =
       wmi === '3VW' && (vds.startsWith('RE1') || vds.startsWith('AJ5') || pos4 === 'R');
     if (isMexJetta || (wmi === '3VW' && code78 === '1K')) {
+      const models = plat?.models.join(' / ') ?? 'Jetta V Mk5';
+      const year = v[9];
+      const brNote =
+        wmi === '3VW' && (year === '9' || year === 'A' || year === 'B')
+          ? ' — mercado BR: use preset Brasil'
+          : '';
       return {
-        hint: `VW Jetta Mk5 (PQ35, ${code78}) — WMI 3VW, VDS «${vds}»`,
+        hint: `VW ${models} (${plat?.platform ?? 'PQ35'}, ${code78}) — importado ${WMI_HINTS[wmi] ?? wmi}${brNote}`,
         byte0: 0x11,
       };
     }
+    const models = plat?.models.join(' / ') ?? code78;
     return {
-      hint: `PQ35 (${code78}) — Golf V / Jetta V / Octavia II; byte 0 usual 0x11 LHD`,
+      hint: `${plat?.platform ?? 'VAG'} ${code78} — ${models}; byte 0 usual 0x11 LHD`,
       byte0: 0x11,
     };
   }
@@ -94,15 +97,19 @@ export function decodeVinChassis(vin: string): VinDecodeInfo | null {
     expected: computeVinByte(formula, v),
   }));
 
+  const vehicle = decodeVinVehicleDetails(v);
+
   return {
     vin: v,
     wmi: v.slice(0, 3),
+    wmiLabel: WMI_HINTS[v.slice(0, 3)] ?? 'VAG',
     vds: v.slice(3, 9),
     vis: v.slice(9, 17),
     modelCode78: pair78,
     char7,
     char8,
     vehicleHint: hint,
+    vehicle,
     suggestedByte0: byte0,
     byte1Expected: BYTE1_VIN_PAIR[pair78] ?? BYTE1_VIN_PAIR['1K'] ?? 0x3b,
     byte3Expected: BYTE3_VIN_CHAR[char8] ?? null,
@@ -171,15 +178,6 @@ export function compareWithReference(
     });
   }
   return rows;
-}
-
-/** Preenche bytes de equipamento (não sobrescreve índices derivados do VIN). */
-export function applyEquipmentPreset(bytes: number[], preset: number[]): number[] {
-  const out = [...bytes];
-  for (let i = 0; i < Math.min(out.length, preset.length); i++) {
-    if (!VIN_DERIVED_INDICES.has(i)) out[i] = preset[i];
-  }
-  return out;
 }
 
 export function applyPq35CcPreset(bytes: number[]): number[] {

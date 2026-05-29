@@ -342,6 +342,43 @@
   text-align: left;
 }
 
+.vin-byte-list.compact {
+  padding-left: 1rem;
+  margin: 0.25rem 0 0;
+}
+
+.vin-limits {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.vin-limits ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.conf-media {
+  color: #ca8a04;
+}
+
+.conf-alta {
+  color: var(--accent);
+}
+
+.vin-panel .ok {
+  color: #16a34a;
+}
+
+.vin-panel .warn {
+  color: #ca8a04;
+}
+
+.br-panel .br-label {
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
 .issue-info {
   color: var(--muted);
 }
