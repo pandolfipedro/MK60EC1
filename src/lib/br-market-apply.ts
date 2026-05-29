@@ -7,6 +7,7 @@ import {
 import {
   isBrImportJettaCandidate,
   resolveBrJettaMarket,
+  type BrBody,
   type BrJettaMarketConfig,
 } from '../data/br-jetta-market';
 import { applyEquipmentPreset } from './equipment-preset';
@@ -36,8 +37,9 @@ export function buildBrCodingFromVin(
   baseBytes: number[],
   vin: string,
   moduleSuffix: ModuleSuffix,
+  bodyOverride?: BrBody,
 ): BrApplyResult | null {
-  const config = resolveBrJettaMarket(vin);
+  const config = resolveBrJettaMarket(vin, bodyOverride);
   if (!config) return null;
 
   const preset = buildBrPresetBytes(config, moduleSuffix);
@@ -64,12 +66,13 @@ export function buildFullFromChassisForPart(
   baseBytes: number[],
   vin: string,
   partQuery: string,
+  bodyOverride?: BrBody,
 ): number[] | null {
   if (!isValidVin(vin)) return null;
   const suffix = moduleSuffixFromPart(partQuery) ?? 'CC';
 
   if (isBrImportJettaCandidate(normalizeVin(vin))) {
-    const br = buildBrCodingFromVin(baseBytes, vin, suffix);
+    const br = buildBrCodingFromVin(baseBytes, vin, suffix, bodyOverride);
     if (br) return br.bytes;
   }
 
@@ -79,10 +82,15 @@ export function buildFullFromChassisForPart(
   return applyVinToCoding(bytes, vin);
 }
 
-export function getBrMarketPreview(vin: string): BrJettaMarketConfig | null {
+export function getBrMarketPreview(
+  vin: string,
+  bodyOverride?: BrBody,
+): BrJettaMarketConfig | null {
   if (!isBrImportJettaCandidate(vin.toUpperCase())) return null;
-  return resolveBrJettaMarket(vin);
+  return resolveBrJettaMarket(vin, bodyOverride);
 }
+
+export type { BrBody };
 
 export function profileIdForModule(suffix: ModuleSuffix): ProfileId {
   if (suffix === 'AD') return 'len17';

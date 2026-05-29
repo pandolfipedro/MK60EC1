@@ -379,6 +379,112 @@
   margin: 0 0 0.5rem;
 }
 
+.br-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 0.75rem 0;
+}
+
+@media (max-width: 640px) {
+  .br-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.br-h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.br-h4.ok-title {
+  color: #16a34a;
+}
+
+.br-h4.no-title {
+  color: #dc2626;
+}
+
+.br-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.br-optional,
+.br-verify,
+.br-coding-summary {
+  margin-top: 0.75rem;
+}
+
+.br-coding-summary {
+  padding: 0.5rem 0.75rem;
+  background: rgba(22, 163, 74, 0.08);
+  border-radius: 6px;
+}
+
+.br-simple-bytes {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+
+.br-byte-fold summary {
+  cursor: pointer;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.br-byte-fold .subtle {
+  font-size: 0.8rem;
+}
+
+.br-body-pick {
+  border: none;
+  margin: 0.75rem 0;
+  padding: 0;
+}
+
+.br-body-pick legend {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.body-opt {
+  display: block;
+  margin: 0.35rem 0;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.body-opt .inline {
+  display: inline;
+}
+
+.warn-box {
+  padding: 0.5rem 0.75rem;
+  background: rgba(202, 138, 4, 0.12);
+  border-radius: 6px;
+  margin: 0.5rem 0;
+}
+
+.br-list.timeline li {
+  margin-bottom: 0.35rem;
+}
+
+.toggle-advanced {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
 .issue-info {
   color: var(--muted);
 }

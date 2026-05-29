@@ -1,51 +1,29 @@
 /**
- * Presets de equipamento MK60EC1 — Jetta mercado brasileiro.
- * Bytes VIN (1,3,5,7,9,11,13) são sempre aplicados depois.
+ * Presets MK60EC1 — Jetta mercado brasileiro (sem ACC/PLA indevidos).
  */
 
 import type { ProfileId } from '../lib/types';
 import type { BrJettaMarketConfig } from './br-jetta-market';
+import { getBrEquipmentBytes } from './br-equipment-catalog';
 import { PQ35_CC_FACTORY } from './reference-presets';
 
 export type ModuleSuffix = 'AD' | 'BL' | 'CC';
 
-/** Equipamento comum Jetta PQ35 BR 2.5 / sedã importado */
-const MK5_25_EQUIP: Partial<Record<number, number>> = {
+const MK5_25_BASE: Partial<Record<number, number>> = {
   0: 0x11,
   2: 0x40,
   4: 0x4a,
   6: 0x08,
-  15: 0x41,
 };
 
-/** Mk6 2.0 TSI sedã — valores base; validar no veículo */
-const MK6_TSI_EQUIP: Partial<Record<number, number>> = {
+const MK6_TSI_BASE: Partial<Record<number, number>> = {
   0: 0xa4,
   2: 0x40,
   4: 0x21,
   6: 0x08,
-  15: 0x41,
 };
 
-const MODULE_TAIL: Record<
-  ModuleSuffix,
-  Partial<Record<number, number>>
-> = {
-  AD: {
-    16: 0x34,
-  },
-  BL: {
-    16: 0xa1,
-    17: 0x08,
-    18: 0x00,
-  },
-  CC: {
-    16: 0xe1,
-    17: 0x08,
-    18: 0x00,
-    19: 0x60,
-  },
-};
+const AD_16 = 0x34;
 
 function profileByteCount(profileId: ProfileId): number {
   const map: Record<ProfileId, number> = {
@@ -72,9 +50,7 @@ function mergeEquipment(
   const idx16 = 16;
   if (idx16 < n) {
     bytes[idx16] =
-      profileId === 'len17' || profileId === 'len18'
-        ? parseInt('30', 16)
-        : parseInt('A0', 16);
+      profileId === 'len17' || profileId === 'len18' ? 0x30 : 0xa0;
   }
   for (const layer of layers) {
     for (const [k, val] of Object.entries(layer)) {
@@ -90,23 +66,25 @@ function equipmentForConfig(
   suffix: ModuleSuffix,
 ): number[] {
   const profileId = suffixToProfile(suffix);
+  const brTail = getBrEquipmentBytes(config, suffix);
 
-  let base: Partial<Record<number, number>>;
-  if (config.engine === 'TSI_20' || config.engine === 'FLEX_20') {
-    base = { ...MK6_TSI_EQUIP };
-  } else {
-    base = { ...MK5_25_EQUIP };
-  }
-
-  if (config.generation === 'MK5' && config.engine === '2.5') {
-    base = { ...MK5_25_EQUIP };
-  }
-
-  if (suffix === 'CC' && config.engine === '2.5' && config.generation === 'MK5') {
+  if (
+    suffix === 'CC' &&
+    config.engine === '2.5' &&
+    config.generation === 'MK5' &&
+    config.modelYear === 2010
+  ) {
     return [...PQ35_CC_FACTORY];
   }
 
-  return mergeEquipment(profileId, base, MODULE_TAIL[suffix]);
+  const chassis =
+    config.engine === 'TSI_20' || config.engine === 'FLEX_20'
+      ? MK6_TSI_BASE
+      : MK5_25_BASE;
+
+  const ad16 = suffix === 'AD' ? { 16: AD_16 } : {};
+
+  return mergeEquipment(profileId, chassis, brTail, ad16);
 }
 
 export function buildBrPresetBytes(
@@ -116,15 +94,9 @@ export function buildBrPresetBytes(
   return equipmentForConfig(config, suffix);
 }
 
-export function describeBrPreset(config: BrJettaMarketConfig, suffix: ModuleSuffix): string {
-  const lines = [
-    `Preset BR: ${config.label}`,
-    `Módulo ${suffix} (${suffixToProfile(suffix)}, ${profileByteCount(suffixToProfile(suffix))} bytes)`,
-  ];
-  if (config.engine === '2.5') {
-    lines.push('EDS2 (byte 15), freios FN3 288mm, Jetta NAR byte 6, sem TSI.');
-  } else {
-    lines.push('Perfil Mk6/TSI — revise bytes 0 e 4 no veículo.');
-  }
-  return lines.join(' · ');
+export function describeBrPreset(
+  config: BrJettaMarketConfig,
+  suffix: ModuleSuffix,
+): string {
+  return `Jetta BR ${config.modelYear} · ${suffix} · sem ACC/PLA`;
 }

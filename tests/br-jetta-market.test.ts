@@ -52,10 +52,8 @@ describe('mercado BR Jetta', () => {
   it('Variant 2011 força 2.5', () => {
     const vin =
       JETTA_2010.slice(0, 3) + 'AJ51K' + JETTA_2010.slice(8, 9) + 'B' + JETTA_2010.slice(10);
-    const c = resolveBrJettaMarket(vin);
-    if (c) {
-      expect(c.body).toBe('VARIANT');
-      expect(c.engine).toBe('2.5');
-    }
+    const c = resolveBrJettaMarket(vin, 'VARIANT');
+    expect(c?.body).toBe('VARIANT');
+    expect(c?.engine).toBe('2.5');
   });
 });

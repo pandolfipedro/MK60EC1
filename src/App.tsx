@@ -20,9 +20,11 @@ import { REFERENCE_LONG_CODES } from './data/reference-presets';
 import { applyPq35CcPreset } from './lib/vin-decode';
 import {
   buildFullFromChassisForPart,
-  moduleSuffixFromPart,
+  getBrMarketPreview,
+  type BrBody,
 } from './lib/br-market-apply';
 import { BrMarketPanel } from './components/BrMarketPanel';
+import { BrSimpleBytePanel } from './components/BrSimpleBytePanel';
 import { HexOutput } from './components/HexOutput';
 import { DecodeTable } from './components/DecodeTable';
 import { ByteEditor } from './components/ByteEditor';
@@ -55,6 +57,14 @@ export default function App() {
   const [migrateResult, setMigrateResult] = useState<
     ReturnType<typeof migrateCoding> | null
   >(null);
+  const [showAdvancedBytes, setShowAdvancedBytes] = useState(false);
+  const [brBodyChoice, setBrBodyChoice] = useState<BrBody | 'auto'>('auto');
+
+  const brBodyOverride = brBodyChoice === 'auto' ? undefined : brBodyChoice;
+  const brMarket = useMemo(
+    () => (vin.length === 17 ? getBrMarketPreview(vin, brBodyOverride) : null),
+    [vin, brBodyOverride],
+  );
 
   const copy = useCopy();
 
@@ -169,7 +179,12 @@ export default function App() {
                   type="button"
                   className="btn"
                   onClick={() => {
-                    const next = buildFullFromChassisForPart(bytes, vin, partQuery);
+                    const next = buildFullFromChassisForPart(
+                      bytes,
+                      vin,
+                      partQuery,
+                      brBodyOverride,
+                    );
                     if (next) setBytes(next);
                   }}
                 >
@@ -207,16 +222,33 @@ export default function App() {
                 onCopySpaced={() => copy(formatHexCoding(bytes, true))}
               />
 
-              <div className="byte-grid">
-                {profile.bytes.map((def) => (
-                  <ByteEditor
-                    key={def.index}
-                    def={def}
-                    value={bytes[def.index] ?? 0}
-                    onChange={(v) => setBytes((b) => setByte(b, def.index, v))}
+              {brMarket && (
+                <BrSimpleBytePanel defs={profile.bytes} bytes={bytes} />
+              )}
+
+              {brMarket && (
+                <label className="toggle-advanced">
+                  <input
+                    type="checkbox"
+                    checked={showAdvancedBytes}
+                    onChange={(e) => setShowAdvancedBytes(e.target.checked)}
                   />
-                ))}
-              </div>
+                  {t.showAdvancedBytes}
+                </label>
+              )}
+
+              {(!brMarket || showAdvancedBytes) && (
+                <div className="byte-grid">
+                  {profile.bytes.map((def) => (
+                    <ByteEditor
+                      key={def.index}
+                      def={def}
+                      value={bytes[def.index] ?? 0}
+                      onChange={(v) => setBytes((b) => setByte(b, def.index, v))}
+                    />
+                  ))}
+                </div>
+              )}
 
               <h3>Decodificação</h3>
               <DecodeTable rows={decoded.decoded} />
@@ -298,7 +330,9 @@ export default function App() {
           {vin.length === 17 && (
             <BrMarketPanel
               vin={vin}
-              moduleSuffix={moduleSuffixFromPart(partQuery)}
+              partQuery={partQuery}
+              bodyChoice={brBodyChoice}
+              onBodyChoiceChange={setBrBodyChoice}
             />
           )}
           {vin.length === 17 && (
